@@ -57,22 +57,7 @@ def feed_stack(puzzle, x, y):
                 case_stack.append((x_s, y_s))
 
 
-def horizontal_check(puzzle, x, y):
-    if type(puzzle[x][y]) is list:
-        for v in puzzle[x][y]:
-            is_the_only_place_for_v = True
-            for i in range(0, 9):
-                if i != x and type(puzzle[i][y]) is list and v in puzzle[i][y]:
-                    is_the_only_place_for_v = False
-                    continue
-            if is_the_only_place_for_v:
-                puzzle[x][y] = v
-                print("Set {} to {}-{}".format(puzzle[x][y], x, y))
-                feed_stack(puzzle, x, y)
-                continue
-
-
-def square_check(puzzle, x, y):
+def square_uniqueness_solution(puzzle, x, y):
     if type(puzzle[x][y]) is list:
         for v in puzzle[x][y]:
             is_the_only_place_for_v = True
@@ -80,7 +65,9 @@ def square_check(puzzle, x, y):
                 for j in range(0, 3):
                     x_s = x - x % 3 + i
                     y_s = y - y % 3 + j
-                    if x_s != x and y_s != y and type(puzzle[x_s][y_s]) is list and v in puzzle[x_s][y_s]:
+                    if not (x_s == x and y_s == y) and \
+                            ((type(puzzle[x_s][y_s]) is list and v in puzzle[x_s][y_s]) or
+                                 (type(puzzle[x_s][y_s]) is int and v == puzzle[x_s][y_s])):
                         is_the_only_place_for_v = False
                         continue
                 if not is_the_only_place_for_v:
@@ -92,12 +79,31 @@ def square_check(puzzle, x, y):
                 continue
 
 
-def vertical_check(puzzle, x, y):
+def horizontal_uniqueness_solution(puzzle, x, y):
+    if type(puzzle[x][y]) is list:
+        for v in puzzle[x][y]:
+            is_the_only_place_for_v = True
+            for i in range(0, 9):
+                if i != x and \
+                        ((type(puzzle[i][y]) is list and v in puzzle[i][y]) or
+                             (type(puzzle[i][y]) is int and puzzle[i][y] == v)):
+                    is_the_only_place_for_v = False
+                    continue
+            if is_the_only_place_for_v:
+                puzzle[x][y] = v
+                print("Set {} to {}-{}".format(puzzle[x][y], x, y))
+                feed_stack(puzzle, x, y)
+                continue
+
+
+def vertical_uniqueness_solution(puzzle, x, y):
     if type(puzzle[x][y]) is list:
         for v in puzzle[x][y]:
             is_the_only_place_for_v = True
             for j in range(0, 9):
-                if j != y and type(puzzle[x][j]) is list and v in puzzle[x][j]:
+                if j != y and \
+                        ((type(puzzle[x][j]) is list and v in puzzle[x][j]) or
+                             (type(puzzle[x][j]) is int and puzzle[x][j] == v)):
                     is_the_only_place_for_v = False
                     continue
             if is_the_only_place_for_v:
@@ -111,13 +117,9 @@ def check_case(puzzle, x, y):
     if len(puzzle[x][y]) is 1:
         puzzle[x][y] = puzzle[x][y][0]
         print("Set {} to {}-{}".format(puzzle[x][y], x, y))
-    else:
-        horizontal_check(puzzle, x, y)
-        vertical_check(puzzle, x, y)
-        square_check(puzzle, x, y)
 
 
-def square_uniqueness_rule(puzzle, x, y):
+def square_uniqueness_value(puzzle, x, y):
     if type(puzzle[x][y]) is list:
         for i in range(0, 3):
             for j in range(0, 3):
@@ -129,7 +131,7 @@ def square_uniqueness_rule(puzzle, x, y):
         check_case(puzzle, x, y)
 
 
-def vertical_uniqueness_rule(puzzle, x, y):
+def vertical_uniqueness_value(puzzle, x, y):
     if type(puzzle[x][y]) is list:
         for j in range(0, 9):
             if type(puzzle[x][j]) is int and puzzle[x][j] in puzzle[x][y]:
@@ -138,7 +140,7 @@ def vertical_uniqueness_rule(puzzle, x, y):
         check_case(puzzle, x, y)
 
 
-def horizontal_uniqueness_rule(puzzle, x, y):
+def horizontal_uniqueness_value(puzzle, x, y):
     if type(puzzle[x][y]) is list:
         for i in range(0, 9):
             if type(puzzle[i][y]) is int and puzzle[i][y] in puzzle[x][y]:
@@ -151,9 +153,12 @@ def solve(puzzle):
     init_stack(puzzle)
     while len(case_stack) > 0:
         x, y = case_stack.pop()
-        vertical_uniqueness_rule(puzzle, x, y)
-        horizontal_uniqueness_rule(puzzle, x, y)
-        square_uniqueness_rule(puzzle, x, y)
+        vertical_uniqueness_value(puzzle, x, y)
+        horizontal_uniqueness_value(puzzle, x, y)
+        square_uniqueness_value(puzzle, x, y)
+        vertical_uniqueness_solution(puzzle, x, y)
+        horizontal_uniqueness_solution(puzzle, x, y)
+        square_uniqueness_solution(puzzle, x, y)
     return puzzle
 
 
@@ -174,4 +179,4 @@ def print_puzzle(puzzle):
 
 
 if __name__ == "__main__":
-    print_puzzle(solve(puzzle_medium))
+    print_puzzle(solve(puzzle_insane))
