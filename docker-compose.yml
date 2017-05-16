@@ -1,0 +1,22 @@
+version: '2'
+
+services:
+    api:
+        image: sudoku-solver
+        build: .
+        extends:
+            file: docker-compose-common.yml
+            service: api
+        entrypoint: ["python", "/srv/app/main.py"]
+        ports:
+            - "5000:5000/tcp"
+            - "5001:8000/tcp"
+    shell:
+        image: src-feedback-api
+        build: .
+        extends:
+            file: docker-compose-common.yml
+            service: api
+        entrypoint: ["/bin/bash", "-c"]
+        stdin_open: true
+        tty: true
