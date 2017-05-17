@@ -28,8 +28,8 @@ def solve():
         puzzle = Puzzle()
         for x in range(0, 9):
             for y in range(0, 9):
-                if type(array[x][y]) is int:
+                if type(array[x][y]) is int and 0 < array[x][y] < 10:
                     puzzle.set_value(x, y, array[x][y])
         if puzzle.solve() is True:
-            return jsonify({'status': 'OK'})
+            return jsonify({'status': 'OK', 'solution': puzzle.puzzle})
     return jsonify({'status': 'NOK'})
