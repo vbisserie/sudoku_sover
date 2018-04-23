@@ -9,7 +9,7 @@ WORKDIR $WORKDIR
 
 # Install require software and libraries
 
-COPY ./docker/nginx.list /etc/apt/sources.list.d/nginx.list
+COPY ./docker/nginx/nginx.list /etc/apt/sources.list.d/nginx.list
 RUN curl http://nginx.org/keys/nginx_signing.key | apt-key add -
 
 RUN apt-get -y update && \
@@ -22,16 +22,18 @@ COPY ./requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt && \
     chmod +x /usr/local/bin/uwsgi
 
-COPY ./docker/nginx.conf /etc/nginx/nginx.conf
-COPY ./docker/supervisord.conf /etc/supervisor/supervisord.conf
+COPY ./docker/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
+COPY ./docker/supervisor/nginx.conf /etc/supervisor/conf.d/nginx.conf
+COPY ./docker/supervisor/uwsgi.conf /etc/supervisor/conf.d/uwsgi.conf
+
 RUN rm /etc/nginx/conf.d/default.conf
+COPY ./docker/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY ./docker/nginx/site.conf /etc/nginx/conf.d/site.conf
 
-# Create nginx temporary folders.
-RUN mkdir -p /tmp/nginx /tmp/app/logs && chown -R www-data: /tmp/nginx /tmp/app/logs
+COPY ./docker/uwsgi/uwsgi.ini /etc/uwsgi/uwsgi.ini
 
-COPY ./docker/site.conf /etc/nginx/conf.d/site.conf
-COPY ./docker/uwsgi.conf /etc/supervisor/conf.d/uwsgi.conf
+COPY ./docker/docker-entrypoint.sh /tmp/docker-entrypoint.sh
 COPY . /srv/app
 
 # Application entrypoint
-CMD ["/srv/app/docker/docker-entrypoint.sh"]
+CMD ["/tmp/docker-entrypoint.sh"]
